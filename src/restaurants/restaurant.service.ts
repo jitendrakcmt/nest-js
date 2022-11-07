@@ -37,7 +37,7 @@ export class RestaurantsService {
     }
     return data;
   }
-
+  //Update Restaurant by ID =>PUT
   async updateById(id: string, restaurant: Restaurant): Promise<Restaurant> {
     const data = await this.restaturantModel.findByIdAndUpdate(id, restaurant, {
       new: true,
