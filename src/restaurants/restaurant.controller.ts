@@ -9,9 +9,15 @@ import {
   Res,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { Query as ExpressQuery } from 'express-serve-static-core';
+// import { Query } from 'mongoose';
+import { ApiResponse } from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { User } from 'src/auth/schema/user.schema';
 import { CreateResaturantDto } from './dto/create-restaurant.dto';
 import { UpdateResaturantDto } from './dto/update.restaurant.dto';
 import { RestaurantsService } from './restaurant.service';
@@ -22,14 +28,20 @@ export class RestaurantsController {
   constructor(private restaurantService: RestaurantsService) {}
 
   @Get()
-  async getAllRestaurants(): Promise<Restaurant[]> {
-    console.log('dsdsd');
-    return this.restaurantService.findAll();
+  @UseGuards(AuthGuard())
+  async getAllRestaurants(
+    @Query() query: ExpressQuery,
+    @CurrentUser() user: User,
+  ): Promise<Restaurant[]> {
+    console.log(user);
+    return this.restaurantService.findAll(query);
   }
-  //   findAll(@Req() request: Request): string {
-  //     return 'This action returns all cats';
-  //   }
+
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'Record has been successfully created',
+  })
   async createResaturant(
     @Body() restaurants: CreateResaturantDto,
   ): Promise<Restaurant> {
@@ -39,7 +51,7 @@ export class RestaurantsController {
 
   @Get(':id')
   async getRestaurant(@Param('id') id: string): Promise<Restaurant> {
-    console.log('Jitendra', id);
+    // console.log('Jitendra', id);
     return this.restaurantService.findByID(id);
   }
 

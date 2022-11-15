@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 import * as mongoose from 'mongoose';
 import { Restaurant } from './schema/restaurant.schama';
 
@@ -15,8 +16,22 @@ export class RestaurantsService {
   ) {}
 
   //Get all restaurants
-  async findAll(): Promise<Restaurant[]> {
-    const restaurnt = await this.restaturantModel.find();
+  async findAll(query: ExpressQuery): Promise<Restaurant[]> {
+    const resultPerPage = 5;
+    const currentPage = Number(query.page || 1);
+    const skip = resultPerPage * (currentPage - 1);
+    const keyword = query.keyword
+      ? {
+          name: {
+            $regex: query.keyword,
+            $option: 'i',
+          },
+        }
+      : {};
+    const restaurnt = await this.restaturantModel
+      .find({ ...keyword })
+      .limit(resultPerPage)
+      .skip(skip);
     return restaurnt;
   }
 
